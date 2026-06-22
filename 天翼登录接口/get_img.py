@@ -1,0 +1,112 @@
+"""
+1.pb:
+2.cp:
+3.reqId
+4.referer
+5.:path
+
+"""
+import requests, time, execjs, os, random, string
+
+base_dir = os.path.dirname(os.path.abspath(__file__))
+js_path = os.path.join(base_dir, '1.js')
+
+with open(js_path, 'r', encoding='utf-8') as f:
+    js_code = f.read()
+ctx = execjs.compile(js_code)
+user = {
+    'zhanghao': 13535353535, 
+    'pwd':123456
+}
+headers = {
+    'accept': '*/*',
+    'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
+    'cache-control': 'no-cache',
+    'pragma': 'no-cache',
+    'referer': 'https://open.e.189.cn/api/logbox/separate/web/index.html?appId=E_189&lt=01EC4DD16E9ECC61CB5D009B2F65F88B6A7DA261E021AF28C96A2A68AC17B1454CB249EF3753FBE78005DA085983DC71EDEC0828B1C5F99063BDCE255101ED6B79EA6E42AA987D22D2AE19B18D53B96C2EDC91F8&reqId=0a5007004f9e488691e2060e79962e1d&encryptUrl=8E8BD2989F169B69B202137391188971E3586DC1DB772E7ADD36D3FE26AFAFE994FF164B69847B1AC91324B456B50231B4F919370661B7CA32EA47A6B87F2A42DCAFF7B92BF783F304B7A074BCD4405E3DD6BADDD3FD661A9708F54D88E2A041FE2BB84498E350BE8129B5E11F336928B9EE4554AC53EE5F0425770E7D628BEFC379C2C3AA55278CAE3FDCDAE3DE2422026CB1FFC2211332CE497C0E27C8A85F0FEEB303',
+    'sec-ch-ua': '"Microsoft Edge";v="149", "Chromium";v="149", "Not)A;Brand";v="24"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Windows"',
+    'sec-fetch-dest': 'script',
+    'sec-fetch-mode': 'no-cors',
+    'sec-fetch-site': 'same-origin',
+    'sec-fetch-storage-access': 'active',
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0',
+}
+
+time_now = int(time.time() * 1000)
+randomStr = ''.join(random.choices(string.ascii_lowercase + string.digits, k=16))
+
+data = {
+    "appId": "E_189",
+    "captchaType": 1,
+    "referer": headers['referer'],
+    "time": time_now,
+    "finger": 3881141159,
+    "width": "310"
+}
+
+public_key = ctx.eval('PUBLIC_KEY')
+cp = ctx.call('get_cp', randomStr, public_key)
+pb = ctx.call('get_pb', data, randomStr)
+reqId = ctx.call('get_reqId')
+
+params = {
+    'callback': 'callback_' + str(time_now),
+    'pb': pb,
+    'cp': cp,
+    'appId': 'E_189',
+    'version': '1.0.1',
+    'reqId': reqId,
+}
+
+response = requests.get('https://open.e.189.cn/gw/captcha/get.do', params=params, headers=headers)
+print(response.text)
+
+
+
+headers = {
+    'accept': '*/*',
+    'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
+    'cache-control': 'no-cache',
+    'content-type': 'application/x-www-form-urlencoded',
+    'lt': '2A1E3DE641B507BB0C76BFC572BCE4FDEA786C49F0E280BE8B3202A20AA31F7214EC21A3838F64CB85F3DC6E7A659C3C8BB9B7C40234144301F2FB4280C82F19C2627807AC7B12CE8FB3119A0F6CD6D48CEB0156',
+    'origin': 'https://open.e.189.cn',
+    'pragma': 'no-cache',
+    'priority': 'u=1, i',
+    'referer': 'https://open.e.189.cn/api/logbox/separate/web/index.html?appId=E_189&lt=2A1E3DE641B507BB0C76BFC572BCE4FDEA786C49F0E280BE8B3202A20AA31F7214EC21A3838F64CB85F3DC6E7A659C3C8BB9B7C40234144301F2FB4280C82F19C2627807AC7B12CE8FB3119A0F6CD6D48CEB0156&reqId=52c482a1944249159e581a1b16d382eb&encryptUrl=8E8BD2989F169B69B202137391188971E3586DC1DB772E7ADD36D3FE26AFAFE994FF164B69847B1AC91324B456B50231B4F919370661B7CA32EA47A6B87F2A42DCAFF7B92BF783F304B7A074BCD4405E3DD6BADDD3FD661A9708F54D88E2A041FE2BB84498E350BE8129B5E11F336928B9EE4554AC53EE5F0425770E7D628BEFC379C2C3AA55278CAE3FDCDAE3DE2422026CB1FFC2211332CE497C0E27C8A85F0FEEB303',
+    'reqid': '52c482a1944249159e581a1b16d382eb',
+    'sec-ch-ua': '"Microsoft Edge";v="149", "Chromium";v="149", "Not)A;Brand";v="24"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Windows"',
+    'sec-fetch-dest': 'empty',
+    'sec-fetch-mode': 'cors',
+    'sec-fetch-site': 'same-origin',
+    'sec-fetch-storage-access': 'active',
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0',
+    'user-finger': '3881141159',
+}
+
+data = {
+    'version': 'v2.0',
+    'apToken': '',
+    'appKey': 'E_189',
+    'pageKey': 'normal',
+    'accountType': '02',
+    'userName': '{NRP}'+ ctx.call('encrypt', user.zhanghao),
+    'epd': '{NRP}' + ctx.call('encrypt', user.pwd),
+    'captchaType': '1',
+    'validateCode': '70217a52cba737f87fda923191203c6f2fd0b780e807106f305a5ae0980069c3b7a0d65dfa2f891e9e5df8431e0dc62d7876b52b5a201afddab972f0ac01e30a',
+    'smsValidateCode': '70217a52cba737f87fda923191203c6f2fd0b780e807106f305a5ae0980069c3b7a0d65dfa2f891e9e5df8431e0dc62d7876b52b5a201afddab972f0ac01e30a',
+    'captchaToken': '40ee93be8b5648a48ba7e7ba72395aed',
+    'returnUrl': 'https%3A%2F%2Fe.dlife.cn%2Fuser%2FloginMiddle.do%3FreturnUrlMid%3DaHR0cHM6Ly9lLmRsaWZlLmNuL3BvcnRhbC93ZWIvaW5kZXguaHRtbCZCRDJDRDU0REYzMkZFRkQ0NEZDQkE0QzhDNEJERTI0QTQ3RUEzOEI5',
+    'mailSuffix': '',
+    'dynamicCheck': 'FALSE',
+    'clientType': '1',
+    'cb_SaveName': '0',
+    'isOauth2': 'true',
+    'state': '',
+    'paramId': '3195336B8D31ED40D5D8CCF23AEBD9425297686D3653376AC0CE97F607EE1754E348CB9748E6E590416C4251B725E095A8F0A3C24C3FD61C3EEE0C44490C4E78FEA6BD18',
+}
+
+response = requests.post('https://open.e.189.cn/api/logbox/oauth2/loginSubmit.do', headers=headers, data=data)
