@@ -112,3 +112,197 @@ function encrypt(text, publicKeyBase64) {
 }
 
 console.log("encrypt('13535353535'):", encrypt('13535353535'));
+
+
+
+
+/**
+ * 生成高拟真滑块拖动轨迹
+ * @param {number} targetX - 目标X方向总位移（像素，正数）
+ * @param {Object} [options] - 可选配置
+ * @param {number} [options.minPoints=44] - 最小组数（含起始点）
+ * @param {number} [options.maxPoints=85] - 最大组数（含起始点）
+ * @param {number} [options.minTime=2000] - 最短滑动时间（毫秒）
+ * @param {number} [options.maxTime=3000] - 最长滑动时间（毫秒）
+ * @param {number} [options.randomRange=0.05] - 单步时间随机波动幅度
+ * @returns {{ track: Array<{pointDiff: number, timeDiff: number}>, totalTime: number }}
+ */
+function generateSlideTrack(targetX, options = {}) {
+  const {
+    minPoints = 44,
+    maxPoints = 85,
+    minTime = 2000,
+    maxTime = 3000,
+    randomRange = 0.05
+  } = options;
+
+  // ========== 1. 固定特征阶段（保证运动形态真实，点数固定） ==========
+  // 加速段：启动到峰值速度
+  const phaseAccel = [
+    { pointDiff: 2, timeDiff: 103 },
+    { pointDiff: 3, timeDiff: 6 },
+    { pointDiff: 3, timeDiff: 8 },
+    { pointDiff: 5, timeDiff: 8 },
+    { pointDiff: 5, timeDiff: 8 },
+    { pointDiff: 6, timeDiff: 9 },
+    { pointDiff: 6, timeDiff: 7 },
+    { pointDiff: 7, timeDiff: 8 },
+    { pointDiff: 7, timeDiff: 8 },
+    { pointDiff: 6, timeDiff: 8 },
+    { pointDiff: 8, timeDiff: 8 },
+    { pointDiff: 8, timeDiff: 8 },
+    { pointDiff: 9, timeDiff: 7 }
+  ];
+  // 减速段：峰值到进入微调
+  const phaseDecel = [
+    { pointDiff: 5, timeDiff: 8 },
+    { pointDiff: 4, timeDiff: 8 },
+    { pointDiff: 3, timeDiff: 8 },
+    { pointDiff: 3, timeDiff: 10 },
+    { pointDiff: 1, timeDiff: 25 },
+    { pointDiff: 2, timeDiff: 15 },
+    { pointDiff: 3, timeDiff: 7 },
+    { pointDiff: 3, timeDiff: 8 },
+    { pointDiff: 3, timeDiff: 8 },
+    { pointDiff: 2, timeDiff: 8 },
+    { pointDiff: 1, timeDiff: 73 }
+  ];
+  // 回弹段：过冲后回退修正
+  const phaseRebound = [
+    { pointDiff: -1, timeDiff: 200 },
+    { pointDiff: -1, timeDiff: 9 },
+    { pointDiff: -1, timeDiff: 24 },
+    { pointDiff: -1, timeDiff: 24 },
+    { pointDiff: -1, timeDiff: 41 }
+  ];
+  // 基准微调段：人手对准缺口的小步修正（点数动态调整区）
+  const baseFineTune = [
+    { pointDiff: 1, timeDiff: 15 },
+    { pointDiff: 2, timeDiff: 17 },
+    { pointDiff: 1, timeDiff: 89 },
+    { pointDiff: 1, timeDiff: 15 },
+    { pointDiff: 1, timeDiff: 17 },
+    { pointDiff: 1, timeDiff: 17 },
+    { pointDiff: 2, timeDiff: 7 },
+    { pointDiff: 2, timeDiff: 25 },
+    { pointDiff: 1, timeDiff: 17 },
+    { pointDiff: 1, timeDiff: 6 },
+    { pointDiff: 1, timeDiff: 8 },
+    { pointDiff: 1, timeDiff: 8 },
+    { pointDiff: 1, timeDiff: 24 },
+    { pointDiff: 1, timeDiff: 8 },
+    { pointDiff: 1, timeDiff: 17 },
+    { pointDiff: 1, timeDiff: 7 },
+    { pointDiff: 1, timeDiff: 8 },
+    { pointDiff: 1, timeDiff: 17 },
+    { pointDiff: 1, timeDiff: 424 }
+  ];
+
+  // ========== 2. 计算目标组数，动态生成微调段 ==========
+  const fixedPointCount = phaseAccel.length + phaseDecel.length + phaseRebound.length + 1; // +1是起始点
+  const minFineTune = Math.max(5, minPoints - fixedPointCount);
+  const maxFineTune = Math.max(minFineTune, maxPoints - fixedPointCount);
+  const targetFineTuneCount = Math.floor(minFineTune + Math.random() * (maxFineTune - minFineTune + 1));
+
+  // 动态调整微调段点数
+  let fineTune = [...baseFineTune];
+  const diffCount = targetFineTuneCount - fineTune.length;
+
+  if (diffCount > 0) {
+    // 增加点数：随机插入1像素微调点
+    for (let i = 0; i < diffCount; i++) {
+      const idx = Math.floor(Math.random() * (fineTune.length + 1));
+      const prevT = idx > 0 ? fineTune[idx - 1].timeDiff : 15;
+      const nextT = idx < fineTune.length ? fineTune[idx].timeDiff : 15;
+      fineTune.splice(idx, 0, {
+        pointDiff: 1,
+        timeDiff: Math.round((prevT + nextT) / 2)
+      });
+    }
+  } else if (diffCount < 0) {
+    // 减少点数：随机合并相邻点
+    for (let i = 0; i < Math.abs(diffCount); i++) {
+      if (fineTune.length <= 5) break;
+      const idx = Math.floor(Math.random() * (fineTune.length - 1));
+      fineTune.splice(idx, 2, {
+        pointDiff: fineTune[idx].pointDiff + fineTune[idx + 1].pointDiff,
+        timeDiff: fineTune[idx].timeDiff + fineTune[idx + 1].timeDiff
+      });
+    }
+  }
+
+  // 合并完整基础轨迹（不含起始点）
+  const baseTrack = [...phaseAccel, ...phaseDecel, ...fineTune, ...phaseRebound];
+
+  // ========== 3. 计算目标总时间（2~3秒，随位移正比分布） ==========
+  // 位移映射：50px→2秒，300px→3秒，超出范围自动钳制
+  const normX = Math.max(0, Math.min(1, (targetX - 50) / (300 - 50)));
+  const baseTargetTime = minTime + normX * (maxTime - minTime);
+  // 加入±8%随机波动，仍保持在2~3秒区间内
+  const randomTimeOffset = baseTargetTime * (0.92 + Math.random() * 0.16);
+  const targetTotalTime = Math.max(minTime, Math.min(maxTime, Math.round(randomTimeOffset)));
+
+  // ========== 4. 位移与时间缩放 ==========
+  const baseSumDx = baseTrack.reduce((s, p) => s + p.pointDiff, 0);
+  const baseSumDt = baseTrack.reduce((s, p) => s + p.timeDiff, 0);
+  const scaleX = targetX / baseSumDx;
+  const scaleT = targetTotalTime / baseSumDt;
+
+  // 执行缩放 + 单步时间随机扰动
+  let track = baseTrack.map(item => {
+    const dx = Math.round(item.pointDiff * scaleX);
+    const rawDt = item.timeDiff * scaleT;
+    const randomFactor = 1 - randomRange + Math.random() * 2 * randomRange;
+    const dt = Math.max(1, Math.round(rawDt * randomFactor));
+    return { pointDiff: dx, timeDiff: dt };
+  });
+
+  // 时间二次校准：保证总时间严格落在目标值（误差≤1ms）
+  const currentSumDt = track.reduce((s, p) => s + p.timeDiff, 0);
+  const timeError = targetTotalTime - currentSumDt;
+  if (timeError !== 0) {
+    // 误差分摊到微调段，不影响主运动节奏
+    const fineStart = phaseAccel.length + phaseDecel.length;
+    const fineEnd = fineStart + fineTune.length - 1;
+    const step = timeError > 0 ? 1 : -1;
+    let idx = fineStart;
+    for (let i = 0; i < Math.abs(timeError); i++) {
+      track[idx].timeDiff += step;
+      idx++;
+      if (idx > fineEnd) idx = fineStart;
+    }
+  }
+
+  // ========== 5. 位移误差修正 ==========
+  const currentSumDx = track.reduce((s, p) => s + p.pointDiff, 0);
+  let posError = targetX - currentSumDx;
+  const fineStartIdx = phaseAccel.length + phaseDecel.length;
+  const fineEndIdx = fineStartIdx + fineTune.length - 1;
+  let adjustIdx = fineStartIdx;
+
+  while (posError !== 0) {
+    if (posError > 0) {
+      track[adjustIdx].pointDiff += 1;
+      posError -= 1;
+    } else {
+      track[adjustIdx].pointDiff -= 1;
+      posError += 1;
+    }
+    adjustIdx++;
+    if (adjustIdx > fineEndIdx) adjustIdx = fineStartIdx;
+  }
+
+  // ========== 6. 添加起始点，输出结果 ==========
+  track.unshift({ pointDiff: 0, timeDiff: 0 });
+  const totalTime = track.reduce((s, p) => s + p.timeDiff, 0);
+
+  return { 
+    'track':track, 
+    'totalTime':totalTime};
+}
+// 生成位移 150 像素的轨迹
+const result = generateSlideTrack(150);
+console.log(result)
+console.log('数组组数：', result.track.length); // 44~85 之间随机
+console.log('总滑动时间：', result.totalTime, 'ms'); // 2000~3000 之间
+console.log('总位移校验：', result.track.reduce((s,p)=>s+p.pointDiff, 0)); // 严格等于 150
