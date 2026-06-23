@@ -47,9 +47,9 @@ var data = {
 var cp = get_cp(randomStr, PUBLIC_KEY)
 var pb = get_pb(data, randomStr)
 
-console.log('randomStr:', randomStr)
-console.log('cp:', cp)
-console.log('pb:', pb)
+//console.log('randomStr:', randomStr)
+//console.log('cp:', cp)
+//console.log('pb:', pb)
 
 
 function get_reqId() {
@@ -132,8 +132,8 @@ console.log("encrypt('13535353535'):", encrypt('13535353535'));
  */
 function generateSlideTrack(targetX, options = {}) {
   const {
-    minPoints = 44,
-    maxPoints = 85,
+    minPoints = 35,
+    maxPoints = 50,
     minTime = 2000,
     maxTime = 3000,
     randomRange = 0.05
@@ -306,13 +306,13 @@ function generateSlideTrack(targetX, options = {}) {
 }
 // 生成位移 150 像素的轨迹
 const result = generateSlideTrack(150);
-console.log(result)
-console.log('数组组数：', result.track.length); // 44~85 之间随机
-console.log('总滑动时间：', result.totalTime, 'ms'); // 2000~3000 之间
-console.log('总位移校验：', result.track.reduce((s, p) => s + p.pointDiff, 0)); // 严格等于 150
+//console.log(result)
+// console.log('数组组数：', result.track.length); // 44~85 之间随机
+// console.log('总滑动时间：', result.totalTime, 'ms'); // 2000~3000 之间
+// console.log('总位移校验：', result.track.reduce((s, p) => s + p.pointDiff, 0)); // 严格等于 150
 
 function aes_encrypt(t, i, e) {
-  
+
   const encrypted = CryptoJS["AES"]["encrypt"](t, i, {
     iv: e,
     mode: CryptoJS["mode"]["CBC"],
@@ -323,6 +323,24 @@ function aes_encrypt(t, i, e) {
   const hexUpper = encrypted["ciphertext"]["toString"]()["toUpperCase"]();
   return hexUpper;
 }
+function aes_decrypt(cipherText, key, iv) {
+  // 如果传入的是 hex 字符串，先转换为 CipherParams
+  if (typeof cipherText === 'string') {
+    cipherText = CryptoJS.lib.CipherParams.create({
+      ciphertext: CryptoJS.enc.Hex.parse(cipherText)
+    });
+  }
+  const decrypted = CryptoJS["AES"]["decrypt"](cipherText, key, {
+    iv: iv,
+    mode: CryptoJS["mode"]["CBC"],
+    padding: CryptoJS["pad"]["Pkcs7"]
+  });
+  // 转UTF-8原始明文字符串返回
+  return decrypted.toString(CryptoJS.enc.Utf8);
+}
+// pppp = 'b864bc3e58b5f00115f63525ab12846ad009bf9e1e2fa4d53b06843c0392104c3f5827589ad2b6bf7a3458acd9b94739911610726ddc2c635d5633b319e5aa68865db8969c068369bfbce2ccb1304a8b5df23def19b8f94b1c266e83ec53d9777645b2641acf697d4641a9a909392682dbb67b963328084dd3c78191d63a696a9f981d4dcf2d4b9b6b6755a7cea593663c5f09a0bb3f52be6b6d3985e5f2d5d6bc27f71a47a91a15d494b9552ce4d2dbc30ae344438b2b21ad0d0a15d0bcea78dc414e541461220125f0f102390b8024'
+// iiii = { '$super': { '$super': {} }, 'words': [1735406945, 1684353901, 1815503981, 862348399], 'sigBytes': 16 }
+// console.log(aes_decrypt(pppp,iiii, iiii))
 data = {
   'token': "ffa877c0f389468c8d1c801076bb65d0",
   'captchaType': 1,
@@ -334,29 +352,30 @@ data = {
 
 }
 function get_pb2_cp2(t) {
-  t = JSON.stringify(data)
+  t = JSON.stringify(t)
   console.log("t = ", t)
-  
+
   buffer = new TextEncoder().encode(get_randomstr());
   base64 = getBase64Str(buffer.buffer);
   n = base64
   console.log("get_randomstr() = ", get_randomstr())
   console.log("n =", n)
-  
+
   e = encrypt(n, PUBLIC_KEY)
   console.log("e = ", e)
-  
+
   i = getBase64Parse(n)
   console.log("i =", i)
-  
+
   c = i
 
   t = aes_encrypt(t, i, c)
   console.log("t = ")
   console.log(t)
   return {
-    'pb':t,
-    'cp':e
+    'pb': t,
+    'cp': e,
+    'i': c
   }
 }
 get_pb2_cp2(data)
