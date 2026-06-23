@@ -3,42 +3,45 @@ const { NodeRSA } = require('node-rsa')
 const PUBLIC_KEY = "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDky91Sokyr2UI/K87VMiZp/Pmiggg4fFKgclUZoPCoO+FvdeU/wSvv59Z6fEZi4Uvtzzv5UqCMfFRykokoiGSq8B3X1kr24RbtsWif/+pxfRDCA8tXw3V2DIZ/a03tg8BBgQLpdWuwTmM1448WFIs5O9pyFgjKDFoo5cWvs88HBQIDAQAB"
 
 get_cp = function (randomStr, publicKey) {
-    var n = CryptoJS.enc.Utf8.parse(randomStr)
-    n = CryptoJS.enc.Base64.stringify(n)
-    var key = new NodeRSA()
-    key.importKey('-----BEGIN PUBLIC KEY-----\n' + publicKey + '\n-----END PUBLIC KEY-----', 'public')
-    key.setOptions({ encryptionScheme: 'pkcs1' })
-    return key.encrypt(n, 'base64')
+  var n = CryptoJS.enc.Utf8.parse(randomStr)
+  n = CryptoJS.enc.Base64.stringify(n)
+  var key = new NodeRSA()
+  key.importKey('-----BEGIN PUBLIC KEY-----\n' + publicKey + '\n-----END PUBLIC KEY-----', 'public')
+  key.setOptions({ encryptionScheme: 'pkcs1' })
+  return key.encrypt(n, 'base64')
 }
 
 get_pb = function (data, randomStr) {
-    var t = JSON.stringify(data)
-    var n = CryptoJS.enc.Utf8.parse(randomStr)
-    n = CryptoJS.enc.Base64.stringify(n)
-    var i = CryptoJS.enc.Base64.parse(n)
-    var encrypted = CryptoJS.AES.encrypt(t, i, {
-        iv: i,
-        mode: CryptoJS.mode.CBC,
-        padding: CryptoJS.pad.Pkcs7
-    })
-    return encrypted.ciphertext.toString()
+  var t = JSON.stringify(data)
+  var n = CryptoJS.enc.Utf8.parse(randomStr)
+  n = CryptoJS.enc.Base64.stringify(n)
+  var i = CryptoJS.enc.Base64.parse(n)
+  var encrypted = CryptoJS.AES.encrypt(t, i, {
+    iv: i,
+    mode: CryptoJS.mode.CBC,
+    padding: CryptoJS.pad.Pkcs7
+  })
+  return encrypted.ciphertext.toString()
 }
 
 // 生成 16 位随机字符串
-var randomStr = ''
-var chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
-for (var i = 0; i < 16; i++) {
-    randomStr += chars[Math.floor(36 * Math.random())]
+var randomStr = get_randomstr()
+function get_randomstr() {
+  r = ''
+  var chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
+  for (var i = 0; i < 16; i++) {
+    r += chars[Math.floor(36 * Math.random())]
+  }
+  return r
 }
-
 // 准备数据（对应 3.js 中加载验证码时的 JSON）
 var data = {
-    "appId": "E_189",
-    "captchaType": 1,
-    "referer": "https://open.e.189.cn/api/logbox/separate/web/index.html?appId=E_189&lt=01EC4DD16E9ECC61CB5D009B2F65F88B6A7DA261E021AF28C96A2A68AC17B1454CB249EF3753FBE78005DA085983DC71EDEC0828B1C5F99063BDCE255101ED6B79EA6E42AA987D22D2AE19B18D53B96C2EDC91F8&reqId=0a5007004f9e488691e2060e79962e1d&encryptUrl=8E8BD2989F169B69B202137391188971E3586DC1DB772E7ADD36D3FE26AFAFE994FF164B69847B1AC91324B456B50231B4F919370661B7CA32EA47A6B87F2A42DCAFF7B92BF783F304B7A074BCD4405E3DD6BADDD3FD661A9708F54D88E2A041FE2BB84498E350BE8129B5E11F336928B9EE4554AC53EE5F0425770E7D628BEFC379C2C3AA55278CAE3FDCDAE3DE2422026CB1FFC2211332CE497C0E27C8A85F0FEEB303",
-    "time": Date.now(),
-    "finger": 3881141159,
-    "width": "310"
+  "appId": "E_189",
+  "captchaType": 1,
+  "referer": "https://open.e.189.cn/api/logbox/separate/web/index.html?appId=E_189&lt=01EC4DD16E9ECC61CB5D009B2F65F88B6A7DA261E021AF28C96A2A68AC17B1454CB249EF3753FBE78005DA085983DC71EDEC0828B1C5F99063BDCE255101ED6B79EA6E42AA987D22D2AE19B18D53B96C2EDC91F8&reqId=0a5007004f9e488691e2060e79962e1d&encryptUrl=8E8BD2989F169B69B202137391188971E3586DC1DB772E7ADD36D3FE26AFAFE994FF164B69847B1AC91324B456B50231B4F919370661B7CA32EA47A6B87F2A42DCAFF7B92BF783F304B7A074BCD4405E3DD6BADDD3FD661A9708F54D88E2A041FE2BB84498E350BE8129B5E11F336928B9EE4554AC53EE5F0425770E7D628BEFC379C2C3AA55278CAE3FDCDAE3DE2422026CB1FFC2211332CE497C0E27C8A85F0FEEB303",
+  "time": Date.now(),
+  "finger": 3881141159,
+  "width": "310"
 }
 // 分别调用生成 cp 和 pb
 var cp = get_cp(randomStr, PUBLIC_KEY)
@@ -50,33 +53,33 @@ console.log('pb:', pb)
 
 
 function get_reqId() {
-    for (var n, a = "abcdefghijklmnopqrstuvwxyz0123456789", i = "", c = 0; c < 32; c++)
-        n = Math["floor"](36 * Math["random"]()),
-            i += a.split("")[n];
-    return i
+  for (var n, a = "abcdefghijklmnopqrstuvwxyz0123456789", i = "", c = 0; c < 32; c++)
+    n = Math["floor"](36 * Math["random"]()),
+      i += a.split("")[n];
+  return i
 }
 
 function l() { }
 function y(t, i, r) {
-    null != t && ("number" == typeof t ? this.fromNumber(t, i, r) : null == i && "string" != typeof t ? this["fromString"](t, 256) : this["fromString"](t, i))
+  null != t && ("number" == typeof t ? this.fromNumber(t, i, r) : null == i && "string" != typeof t ? this["fromString"](t, 256) : this["fromString"](t, i))
 }
 function get_user(t, i) {
-    for (var s = new Array, n = t["length"] - 1; 0 <= n && 0 < i;) {
-        var e = t["charCodeAt"](n--);
-        e < 128 ? s[--i] = e : 127 < e && e < 2048 ? (s[--i] = 63 & e | 128,
-            s[--i] = e >> 6 | 192) : (s[--i] = 63 & e | 128,
-                s[--i] = e >> 6 & 63 | 128,
-                s[--i] = e >> 12 | 224)
-    }
-    s[--i] = 0;
-    for (var h = new l, o = new Array; 2 < i;) {
-        for (o[0] = 0; 0 == o[0];)
-            h["nextBytes"](o);
-        s[--i] = o[0]
-    }
-    return s[--i] = 2,
-        s[--i] = 0,
-        new y(s)
+  for (var s = new Array, n = t["length"] - 1; 0 <= n && 0 < i;) {
+    var e = t["charCodeAt"](n--);
+    e < 128 ? s[--i] = e : 127 < e && e < 2048 ? (s[--i] = 63 & e | 128,
+      s[--i] = e >> 6 | 192) : (s[--i] = 63 & e | 128,
+        s[--i] = e >> 6 & 63 | 128,
+        s[--i] = e >> 12 | 224)
+  }
+  s[--i] = 0;
+  for (var h = new l, o = new Array; 2 < i;) {
+    for (o[0] = 0; 0 == o[0];)
+      h["nextBytes"](o);
+    s[--i] = o[0]
+  }
+  return s[--i] = 2,
+    s[--i] = 0,
+    new y(s)
 }
 // get_user('13535353535', 128) // 原调用缺少 l.prototype.nextBytes 和 y 的完整实现，会报错
 
@@ -90,25 +93,25 @@ function get_user(t, i) {
 const crypto = require('crypto');
 
 function encrypt(text, publicKeyBase64) {
-    publicKeyBase64 = publicKeyBase64 || PUBLIC_KEY;
-    if (!publicKeyBase64) {
-        console.error('Invalid RSA public key');
-        return null;
-    }
-    try {
-        var keyPem = '-----BEGIN PUBLIC KEY-----\n' + publicKeyBase64 + '\n-----END PUBLIC KEY-----';
-        // 等效于 5.js 中的 doPublic(modPowInt) + hex格式化
-        var encrypted = crypto.publicEncrypt({
-            key: keyPem,
-            padding: crypto.constants.RSA_PKCS1_PADDING
-        }, Buffer.from(text, 'utf8'));
-        var hex = encrypted.toString('hex');
-        // 等效于 5.js 中的 0 == (1 & hex.length) ? hex : "0" + hex
-        return (hex.length % 2 === 1) ? '0' + hex : hex;
-    } catch (e) {
-        console.error(e);
-        return null;
-    }
+  publicKeyBase64 = publicKeyBase64 || PUBLIC_KEY;
+  if (!publicKeyBase64) {
+    console.error('Invalid RSA public key');
+    return null;
+  }
+  try {
+    var keyPem = '-----BEGIN PUBLIC KEY-----\n' + publicKeyBase64 + '\n-----END PUBLIC KEY-----';
+    // 等效于 5.js 中的 doPublic(modPowInt) + hex格式化
+    var encrypted = crypto.publicEncrypt({
+      key: keyPem,
+      padding: crypto.constants.RSA_PKCS1_PADDING
+    }, Buffer.from(text, 'utf8'));
+    var hex = encrypted.toString('hex');
+    // 等效于 5.js 中的 0 == (1 & hex.length) ? hex : "0" + hex
+    return (hex.length % 2 === 1) ? '0' + hex : hex;
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
 }
 
 console.log("encrypt('13535353535'):", encrypt('13535353535'));
@@ -296,13 +299,80 @@ function generateSlideTrack(targetX, options = {}) {
   track.unshift({ pointDiff: 0, timeDiff: 0 });
   const totalTime = track.reduce((s, p) => s + p.timeDiff, 0);
 
-  return { 
-    'track':track, 
-    'totalTime':totalTime};
+  return {
+    'track': track,
+    'totalTime': totalTime
+  };
 }
 // 生成位移 150 像素的轨迹
 const result = generateSlideTrack(150);
 console.log(result)
 console.log('数组组数：', result.track.length); // 44~85 之间随机
 console.log('总滑动时间：', result.totalTime, 'ms'); // 2000~3000 之间
-console.log('总位移校验：', result.track.reduce((s,p)=>s+p.pointDiff, 0)); // 严格等于 150
+console.log('总位移校验：', result.track.reduce((s, p) => s + p.pointDiff, 0)); // 严格等于 150
+
+function aes_encrypt(t, i, e) {
+  
+  const encrypted = CryptoJS["AES"]["encrypt"](t, i, {
+    iv: e,
+    mode: CryptoJS["mode"]["CBC"],
+    padding: CryptoJS["pad"]["Pkcs7"]
+  });
+
+  // 完全你要的格式：encrypted["ciphertext"]["toString"]()["toUpperCase"]()
+  const hexUpper = encrypted["ciphertext"]["toString"]()["toUpperCase"]();
+  return hexUpper;
+}
+data = {
+  'token': "ffa877c0f389468c8d1c801076bb65d0",
+  'captchaType': 1,
+  'points': '{"token":"ffa877c0f389468c8d1c801076bb65d0","captchaType":1,"points":[{"x":143,"y":0}],"rates":[{"pointDiff":0,"timeDiff":0},{"pointDiff":0,"timeDiff":5},{"pointDiff":1,"timeDiff":14},{"pointDiff":3,"timeDiff":6},{"pointDiff":3,"timeDiff":8},{"pointDiff":4,"timeDiff":8},{"pointDiff":7,"timeDiff":8},{"pointDiff":7,"timeDiff":8},{"pointDiff":9,"timeDiff":8},{"pointDiff":10,"timeDiff":8},{"pointDiff":9,"timeDiff":8},{"pointDiff":13,"timeDiff":8},{"pointDiff":12,"timeDiff":8},{"pointDiff":10,"timeDiff":7},{"pointDiff":8,"timeDiff":9},{"pointDiff":7,"timeDiff":8},{"pointDiff":4,"timeDiff":8},{"pointDiff":3,"timeDiff":8},{"pointDiff":2,"timeDiff":7},{"pointDiff":1,"timeDiff":9},{"pointDiff":1,"timeDiff":40},{"pointDiff":2,"timeDiff":8},{"pointDiff":3,"timeDiff":7},{"pointDiff":3,"timeDiff":9},{"pointDiff":4,"timeDiff":8},{"pointDiff":4,"timeDiff":8},{"pointDiff":3,"timeDiff":7},{"pointDiff":3,"timeDiff":8},{"pointDiff":1,"timeDiff":8},{"pointDiff":1,"timeDiff":8},{"pointDiff":1,"timeDiff":17},{"pointDiff":1,"timeDiff":256},{"pointDiff":1,"timeDiff":7},{"pointDiff":2,"timeDiff":18},{"pointDiff":1,"timeDiff":15},{"pointDiff":1,"timeDiff":16},{"pointDiff":-1,"timeDiff":696},{"pointDiff":-1,"timeDiff":68},{"pointDiff":0,"timeDiff":4573}],"dragTime":5930,"time":1782185620960,"finger":3881141159}',
+  'rates': "OGQ4NWxrNHdqanhvbzl4aA==",
+  'dragTime': 5930,
+  'time': Date.now(),
+  'finger': 3881141159
+
+}
+function get_pb2_cp2(t) {
+  t = JSON.stringify(data)
+  console.log("t = ", t)
+  
+  buffer = new TextEncoder().encode(get_randomstr());
+  base64 = getBase64Str(buffer.buffer);
+  n = base64
+  console.log("get_randomstr() = ", get_randomstr())
+  console.log("n =", n)
+  
+  e = encrypt(n, PUBLIC_KEY)
+  console.log("e = ", e)
+  
+  i = getBase64Parse(n)
+  console.log("i =", i)
+  
+  c = i
+
+  t = aes_encrypt(t, i, c)
+  console.log("t = ")
+  console.log(t)
+  return {
+    'pb':t,
+    'cp':e
+  }
+}
+get_pb2_cp2(data)
+
+
+function getBase64Parse(base64Str) {
+  return CryptoJS['enc']['Base64']['parse'](base64Str)
+}
+function getBase64Str(o) {
+  const bytes = new Uint8Array(o);
+  let binary = '';
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
+// 调用

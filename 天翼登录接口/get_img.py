@@ -130,7 +130,7 @@ print(x, y)
 t111 = [
     {
         "x": x,
-        "y": y
+        "y": 0
     }
 ]
 hhhhh = ctx.call('generateSlideTrack', x)
@@ -146,6 +146,36 @@ data = {
 }
 print(data)
 
+def get_check():
+    headers = {
+        'accept': '*/*',
+        'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6',
+        'cache-control': 'no-cache',
+        'pragma': 'no-cache',
+        'referer': 'https://open.e.189.cn/api/logbox/separate/web/index.html?appId=E_189&lt=D174270CBD978866E3165E8B7AC36F7DC1D691AED640FE5CEBF18AF37317430D0A2F670764D06354F621024D19DEFFA244DD4A836CCC568CF329BB29BB54872FAE5CF9A639C741AC9CFCF3015C6F5D142494EBA4&reqId=f014676f10e849449262cb4c55c705c3&encryptUrl=8E8BD2989F169B69B202137391188971E3586DC1DB772E7ADD36D3FE26AFAFE994FF164B69847B1AC91324B456B50231B4F919370661B7CA32EA47A6B87F2A42DCAFF7B92BF783F304B7A074BCD4405E3DD6BADDD3FD661A9708F54D88E2A041FE2BB84498E350BE8129B5E11F336928B9EE4554AC53EE5F0425770E7D628BEFC379C2C3AA55278CAE3FDCDAE3DE2422026CB1FFC2211332CE497C0E27C8A85F0FEEB303',
+        'sec-ch-ua': '"Microsoft Edge";v="149", "Chromium";v="149", "Not)A;Brand";v="24"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"Windows"',
+        'sec-fetch-dest': 'script',
+        'sec-fetch-mode': 'no-cors',
+        'sec-fetch-site': 'same-origin',
+        'sec-fetch-storage-access': 'active',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0',
+    }
+    
+    pb_and_cb = ctx.call("get_pb2_cp2", data)
+    params = {
+        'pb': pb_and_cb['pb'],
+        'cp': pb_and_cb['cp'],
+        'appId': 'E_189',
+        'version': '1.0.1',
+        'reqId': ctx.call("get_reqId"),
+        'callback': 'callback',
+    }
+    response = requests.get('https://open.e.189.cn/gw/captcha/check.do', params=params, headers=headers)
+    print(params['pb'])
+    print(response.text)
+get_check()
 
 
 
