@@ -1,0 +1,50 @@
+import requests
+
+headers = {
+    'Accept': '*/*',
+    'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive',
+    'Pragma': 'no-cache',
+    'Referer': 'https://passport.weibo.com/',
+    'Sec-Fetch-Dest': 'script',
+    'Sec-Fetch-Mode': 'no-cors',
+    'Sec-Fetch-Site': 'cross-site',
+    'Sec-Fetch-Storage-Access': 'active',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36',
+    'sec-ch-ua': '"Google Chrome";v="149", "Chromium";v="149", "Not)A;Brand";v="24"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Windows"',
+}
+
+params = {
+    'referer': 'https://passport.weibo.com/sso/signin',
+    'zoneId': 'CN31',
+    'dt': '9yK7pflfitRAFkEFBQeCqaui1xGY32Fg',
+    'irToken': '6MS8CBnSpIFAcgAVVRfHve6mmIeRM9xj',
+    'id': '7cda0ba2785647ada4d6e946ddb2d465',
+    'fp': 'UGiqizezi\\V5vY1Tg9SU50LvU2mau1R0hhutJSLEGWjH8BxtfqMpl1ZVRxM6IHRa+TY6hohmSCB8OxPZgO\\8ROq8lIQNUnEBMlxsKjpErLla7V08W+Q1rmGxjaVp/JVGg0qnIDwLmyEtyBWzwa20vl2R\\G7v6jz\\JzOK0WmnhrTzXV40:1782372792043',
+    'https': 'true',
+    'type': '',
+    'version': '2.28.5',
+    'dpr': '1',
+    'dev': '1',
+    'cb': 'r2AjWwjEL+dTykR0+pwNguAPqjHg0fFXZytAawPTqLXK6guBwMIeFIGEjc5HRcxrFo3dTsU3BLUEBbB3bbGHd0QOprE7',
+    'ipv6': 'false',
+    'runEnv': '10',
+    'group': '',
+    'scene': '',
+    'lang': 'zh-CN',
+    'sdkVersion': '',
+    'loadVersion': '2.5.4',
+    'iv': '4',
+    'user': '',
+    'width': '320',
+    'audio': 'false',
+    'sizeType': '10',
+    'smsVersion': 'v3',
+    'token': '',
+    'callback': '__JSONP_sinj1ml_0',
+}
+
+response = requests.get('https://c.dun.163.com/api/v3/get', params=params, headers=headers)
